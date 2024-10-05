@@ -14,16 +14,12 @@ func MqttConnect(settings *config.Settings) mqtt.Client {
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", settings.Mqtt.Broker, settings.Mqtt.Port))
 	opts.SetClientID("switcher_client")
 	opts.SetDefaultPublishHandler(MessageHandler(settings))
-	opts.OnConnect = ConnectionHandler()
+	opts.OnConnect = ConnectionHandler(settings)
 	opts.OnConnectionLost = ConnectionLostHandler()
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-
-	token := client.Subscribe(settings.Mqtt.Topic, 1, nil)
-	token.Wait()
-	fmt.Printf("Subscribed to topic: %s\n", settings.Mqtt.Topic)
 
 	return client
 }
@@ -55,9 +51,14 @@ func MessageHandler(settings *config.Settings) func(client mqtt.Client, msg mqtt
 	}
 }
 
-func ConnectionHandler() func(client mqtt.Client) {
+func ConnectionHandler(settings *config.Settings) func(client mqtt.Client) {
 	return func(client mqtt.Client) {
 		fmt.Println("Connected")
+
+		if token := client.Subscribe(settings.Mqtt.Topic, 1, nil); token.Wait() && token.Error() != nil {
+			panic(token.Error())
+		}
+		fmt.Printf("Subscribed to topic: %s\n", settings.Mqtt.Topic)
 	}
 }
 
