@@ -27,7 +27,10 @@ func MqttConnect(settings *config.Settings) mqtt.Client {
 func MessageHandler(settings *config.Settings) func(client mqtt.Client, msg mqtt.Message) {
 	return func(client mqtt.Client, msg mqtt.Message) {
 		var decodedCommand []monitor.Command
-		json.Unmarshal(msg.Payload(), &decodedCommand)
+		if err := json.Unmarshal(msg.Payload(), &decodedCommand); err != nil {
+			errStr := fmt.Sprintf("Error decoding message: %s\n", err)
+			panic(errStr)
+		}
 
 		for _, command := range decodedCommand {
 			fmt.Printf("Command: %s\n", command)
