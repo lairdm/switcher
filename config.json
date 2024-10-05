@@ -1,0 +1,26 @@
+{
+  "mqtt": {
+    "broker": "192.168.1.10",
+    "port": 1883,
+    "topic": "/home/office/monitors"
+  },
+  "monitors": {
+   "left": {
+     "Serial": "123456",
+     "Inputs": {
+       "hdmi": "0x10",
+       "dp": "0x11"
+     }
+   },
+    "right": {
+      "Serial": "1234567",
+      "Inputs": {
+        "hdmi": "0x10",
+        "usbc": "0x1c"
+      }
+    }
+  },
+  "ddcutil": {
+    "bin": "/usr/bin/ddcutil"
+  }
+}
