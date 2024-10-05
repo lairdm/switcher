@@ -45,9 +45,13 @@ func MessageHandler(settings *config.Settings) func(client mqtt.Client, msg mqtt
 				panic(errorString)
 			}
 
-			cmd := exec.Command(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", command.Input.String())
-			_, err := cmd.Output()
+			fmt.Printf("Attempting to change monitor %s to input %s\n", monitorProfile.Serial, monitorProfile.Inputs[command.Input.String()])
+			fmt.Println(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", "60", monitorProfile.Inputs[command.Input.String()])
+			
+			cmd := exec.Command(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", "60", monitorProfile.Inputs[command.Input.String()])
+			out, err := cmd.Output()
 			if err != nil {
+			        fmt.Println(string(out))
 				panic(err)
 			}
 		}

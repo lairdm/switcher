@@ -6,17 +6,20 @@
   },
   "monitors": {
    "left": {
-     "Serial": "123456",
+     "Serial": "6CM9120993",
      "Inputs": {
-       "hdmi": "0x10",
-       "dp": "0x11"
+        "dvi": "0x03",
+        "dp": "0x0f",
+        "hdmi": "0x11",
+        "usbc": "0x13"
      }
    },
     "right": {
-      "Serial": "1234567",
+      "Serial": "GB2Q2P3",
       "Inputs": {
-        "hdmi": "0x10",
-        "usbc": "0x1c"
+        "dp": "0x0f",
+        "hdmi": "0x11",
+        "usbc": "0x13"
       }
     }
   },

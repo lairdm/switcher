@@ -11,3 +11,4 @@ services:
       - 'c *:* rmw'
     volumes:
       - /dev:/dev
+      - ./config.json:/app/config.json

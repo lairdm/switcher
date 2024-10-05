@@ -15,10 +15,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o switcher
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM alpine:latest
-
-RUN apk update
-RUN apk add --no-cache bash curl jq ddcutil
+FROM debian:bullseye
 
 RUN adduser \
     --disabled-password \
@@ -28,9 +25,13 @@ RUN adduser \
     && chown -R app /app
 
 # This is what is currently is on rocinante
-RUN addgroup -g 139 i2c
+RUN groupadd -g 139 i2c
 
-RUN addgroup app i2c
+RUN usermod -a -G i2c app
+
+RUN apt-get update
+RUN apt-get -y install --no-install-recommends bash curl jq ddcutil
+RUN apt-get clean
 
 USER app
 
@@ -39,4 +40,4 @@ RUN mkdir -p /app \
 
 WORKDIR /app
 COPY --from=builder /workspace/switcher .
-ENTRYPOINT ["/switcher"]
+ENTRYPOINT ["./switcher"]

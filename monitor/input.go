@@ -12,6 +12,7 @@ const (
 	HDMI Input = iota + 1
 	DP
 	USB_C
+	DVI
 )
 
 var (
@@ -19,11 +20,13 @@ var (
 		1: "hdmi",
 		2: "dp",
 		3: "usbc",
+		4: "dvi",
 	}
 	Input_value = map[string]uint8{
 		"hdmi": 1,
 		"dp":   2,
 		"usbc": 3,
+		"dvi":  4,
 	}
 )
 
