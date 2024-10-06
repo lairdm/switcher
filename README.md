@@ -49,3 +49,11 @@ Do not attempt to learn anything from this code, it was my first attempt with Go
   }
 ]
 ```
+
+## Notes
+
+ddcutil seems a little finicky depending on the video card. ddcutil segfaults immediately on my laptop with external monitors plugged in. Trying Arch as described in the (ddcutil FAQ)[https://www.ddcutil.com/faq/] gives a partial communication failure - it sees the monitors but isn't able to communicate sufficiently to send commands.
+
+On my old desktop the Arch method is able to issue commands.
+
+I had contemplated it could be the input type (USB-C DP alt-mode on the laptop, HDMI on the desktop), however ddcutil works perfectly fine from the normal shell. Anyhow, we'll see how this works on the desktop when I'm ready to go live, otherwise I might just run the application using supervisord.
