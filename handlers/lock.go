@@ -17,7 +17,7 @@ func LockHandler(rawCommand json.RawMessage, settings *config.Settings) {
 
 	fmt.Printf("Lock: %s\n", command)
 
-	if !command.Lock {
+	if command.Unlock {
 		fmt.Println("Unlocking")
 		cmd := exec.Command(settings.XLock.Bin)
 		out, err := cmd.Output()
