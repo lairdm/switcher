@@ -20,10 +20,9 @@ func LockHandler(rawCommand json.RawMessage, settings *config.Settings) {
 	if command.Unlock {
 		fmt.Println("Unlocking")
 		cmd := exec.Command(settings.XLock.Bin)
-		out, err := cmd.Output()
+		_, err := cmd.Output()
 		if err != nil {
-			fmt.Println(string(out))
-			panic(err)
+			fmt.Println("The screen might already be unlocked")
 		}
 	}
 }
