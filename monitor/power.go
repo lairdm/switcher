@@ -9,7 +9,7 @@ import (
 type Power uint8
 
 const (
-	On
+	On Power = iota + 1
 	Off
 	Wake
 )
