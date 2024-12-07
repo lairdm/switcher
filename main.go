@@ -15,7 +15,7 @@ func main() {
 	fmt.Println(settings)
 
 	client := handlers.MqttConnect(settings)
-	//	testJson := []byte(`[{"Input":"dp","Monitor":"left"},{"Input":"usbc","Monitor":"right"}]`)
+	//	testJson := []byte(`[{"Command":"monitor","Data":{"Input":"dp","Monitor":"left"}},{"Command":"monitor","Data":{"Input":"usbc","Monitor":"right"}}]`)
 
 	// Wait for a signal to exit the program gracefully
 	sigChan := make(chan os.Signal, 1)

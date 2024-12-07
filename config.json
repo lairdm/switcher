@@ -2,7 +2,8 @@
   "mqtt": {
     "broker": "192.168.1.10",
     "port": 1883,
-    "topic": "/home/office/monitors"
+    "topic": "/home/office/monitors",
+    "client_id": "test"
   },
   "monitors": {
    "left": {
@@ -25,5 +26,18 @@
   },
   "ddcutil": {
     "bin": "/usr/bin/ddcutil"
+  },
+  "xset": {
+    "bin": "/usr/bin/xset"
+  },
+  "amixer": {
+    "bin": "/usr/bin/amixer"
+  },
+  "xlock": {
+    "bin": "cinnamon-unlock-desktop"
+  },
+  "lirc": {
+    "bin": "/usr/bin/irsend",
+    "remote": "NEC"
   }
 }
