@@ -33,10 +33,10 @@ func VolumeHandler(command commands.Sound, settings *config.Settings) {
 		cmd = exec.Command(settings.Amixer.Bin, "-D", "pulse", "sset", "Master", "0")
 	case sound.Up:
 		fmt.Println("Increasing volume")
-		cmd = exec.Command(settings.Amixer.Bin, "-D", "pulse", "sset", "Master", "+5%")
+		cmd = exec.Command(settings.Amixer.Bin, "-D", "pulse", "sset", "Master", "5%+")
 	case sound.Down:
 		fmt.Println("Decreasing volume")
-		cmd = exec.Command(settings.Amixer.Bin, "-D", "pulse", "sset", "Master", "-5%")
+		cmd = exec.Command(settings.Amixer.Bin, "-D", "pulse", "sset", "Master", "5%-")
 	}
 
 	out, err := cmd.Output()

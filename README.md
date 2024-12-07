@@ -70,7 +70,7 @@ Do not attempt to learn anything from this code, it was my first attempt with Go
       }
   },
   {
-    "command ": "volume",
+    "command": "speaker",
     "data":
       {
         "volume": "up"
