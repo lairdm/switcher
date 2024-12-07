@@ -31,6 +31,19 @@ Do not attempt to learn anything from this code, it was my first attempt with Go
   },
   "ddcutil": {
     "bin": "/usr/bin/ddcutil"
+  },
+  "xset": {
+    "bin": "/usr/bin/xset"
+  },
+  "amixer": {
+    "bin": "/usr/bin/amixer"
+  },
+  "xlock": {
+    "bin": "cinnamon-unlock-desktop"
+  },
+  "lirc": {
+    "bin": "/usr/bin/irsend",
+    "remote": "NEC"
   }
 }
 ```
@@ -40,24 +53,12 @@ Do not attempt to learn anything from this code, it was my first attempt with Go
 ```json
 [
   {
-  "monitor": "left",
-  "input": "hdmi"
-  },
-  {
-    "monitor": "right",
-    "input": "usbc"
-  }
-]
-```
-
-```json
-[
-  {
     "command": "monitor",
     "data":
       {
       "monitor": "left",
-      "input": "hdmi"
+      "input": "hdmi",
+      "power": "wake"
       }
   },
   {
@@ -66,6 +67,13 @@ Do not attempt to learn anything from this code, it was my first attempt with Go
       {
         "monitor": "right",
         "input": "usbc"
+      }
+  },
+  {
+    "command ": "volume",
+    "data":
+      {
+        "volume": "up"
       }
   }
 ]
