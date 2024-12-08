@@ -17,6 +17,7 @@
    },
     "right": {
       "Serial": "GB2Q2P3",
+      "Display": ":0",
       "Inputs": {
         "dp": "0x0f",
         "hdmi": "0x11",
