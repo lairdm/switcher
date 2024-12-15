@@ -23,6 +23,7 @@ Do not attempt to learn anything from this code, it was my first attempt with Go
    },
     "right": {
       "Serial": "1234567",
+      "Display": "0",
       "Inputs": {
         "hdmi": "0x10",
         "usbc": "0x1c"
