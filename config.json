@@ -17,7 +17,7 @@
    },
     "right": {
       "Serial": "GB2Q2P3",
-      "Display": ":0",
+      "Display": "0",
       "Inputs": {
         "dp": "0x0f",
         "hdmi": "0x11",
@@ -29,7 +29,7 @@
     "bin": "/usr/bin/ddcutil"
   },
   "xset": {
-    "bin": "/usr/bin/xset"
+    "bin": "scripts/wakeUserDisplays.sh"
   },
   "amixer": {
     "bin": "/usr/bin/amixer"
