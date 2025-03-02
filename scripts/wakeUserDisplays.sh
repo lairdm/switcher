@@ -5,14 +5,14 @@ declare screen
 ARGONE_REGEX="[0-9]+"
 SCREEN_REGEX="\:([0-9])+"
 
-if [ ! -z ${1+x} ]; then
-    if [[ ! $1 =~ $ARGONE_REGEX ]]; then
-	echo "Error, \"$1\" is not a valid display label"
+if [ ! -z ${2+x} ]; then
+    if [[ ! $2 =~ $ARGONE_REGEX ]]; then
+	echo "Error, \"$2\" is not a valid display label"
 	exit 1
     fi
 
-    echo "Trying to wake display $1"
-    screen=$1
+    echo "Trying to change ($1) display $2"
+    screen=$2
 fi
 
 w -sh | while read -r user tty from rest; do
@@ -23,5 +23,5 @@ w -sh | while read -r user tty from rest; do
     fi	
     
     echo "Waking display $from for user $user"
-    sudo -u $user xset -display $from dpms force on
+    sudo -u $user xset -display $from dpms force $1
 done

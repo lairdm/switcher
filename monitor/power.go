@@ -12,6 +12,7 @@ const (
 	On Power = iota + 1
 	Off
 	Wake
+	Sleep
 )
 
 var (
@@ -19,11 +20,13 @@ var (
 		1: "on",
 		2: "off",
 		3: "wake",
+		4: "sleep",
 	}
 	Power_value = map[string]uint8{
 		"on":   1,
 		"off":  2,
 		"wake": 3,
+		"sleep": 4,
 	}
 )
 

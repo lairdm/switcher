@@ -1,8 +1,8 @@
 {
   "mqtt": {
-    "broker": "192.168.1.10",
+    "broker": "localhost",
     "port": 1883,
-    "topic": "/home/office/test",
+    "topic": "/home/office/monitors",
     "client_id": "test"
   },
   "monitors": {
