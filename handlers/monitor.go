@@ -67,14 +67,17 @@ func PowerHandler(command commands.Monitor, monitorProfile config.Monitor, setti
 	case monitor.Off:
 		cmd = exec.Command(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", "0xD6", "0x04")
 	case monitor.Wake:
-		cmd = exec.Command(settings.Xset.Bin, "on", monitorProfile.Display)
+		cmd = exec.Command(settings.MonitorCtl.Bin, "on", monitorProfile.Display)
 	case monitor.Sleep:
-		cmd = exec.Command(settings.Xset.Bin, "off", monitorProfile.Display)
+		cmd = exec.Command(settings.MonitorCtl.Bin, "off", monitorProfile.Display)
+	case monitor.Reset:
+		cmd = exec.Command(settings.Blanking.Bin, "600", monitorProfile.Display)
 	default:
 		errStr := fmt.Sprintf("Invalid power state: %s\n", command.Power.String())
 		panic(errStr)
 	}
 
+//	fmt.Println(cmd)
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Println(string(out))

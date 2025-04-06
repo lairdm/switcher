@@ -33,8 +33,11 @@ Do not attempt to learn anything from this code, it was my first attempt with Go
   "ddcutil": {
     "bin": "/usr/bin/ddcutil"
   },
-  "xset": {
-    "bin": "/usr/bin/xset"
+  "monitorctl": {
+    "bin": "scripts/wakeUserDisplays.sh"
+  },
+  "blanking": {
+    "bin": "scripts/resetBlanking.sh"
   },
   "amixer": {
     "bin": "/usr/bin/amixer"
@@ -94,3 +97,7 @@ ddcutil seems a little finicky depending on the video card. ddcutil segfaults im
 On my old desktop the Arch method is able to issue commands.
 
 I had contemplated it could be the input type (USB-C DP alt-mode on the laptop, HDMI on the desktop), however ddcutil works perfectly fine from the normal shell. Anyhow, we'll see how this works on the desktop when I'm ready to go live, otherwise I might just run the application using supervisord.
+
+## Personal note
+
+> CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on /usr/lib/go-1.22/bin/go build -a -o switcher main.go

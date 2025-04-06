@@ -13,6 +13,7 @@ const (
 	Off
 	Wake
 	Sleep
+	Reset
 )
 
 var (
@@ -21,12 +22,14 @@ var (
 		2: "off",
 		3: "wake",
 		4: "sleep",
+		5: "reset",
 	}
 	Power_value = map[string]uint8{
 		"on":   1,
 		"off":  2,
 		"wake": 3,
 		"sleep": 4,
+		"reset": 5,
 	}
 )
 

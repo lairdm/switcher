@@ -8,7 +8,8 @@ type Settings struct {
 	Mqtt     Mqtt               `mapstructure:"mqtt"`
 	Monitors map[string]Monitor `mapstructure:"monitors"`
 	Ddcutil  Ddcutil            `mapstructure:"ddcutil"`
-	Xset     Xset               `mapstructure:"xset"`
+	Blanking Blanking           `mapstructure:"blanking"`
+	MonitorCtl MonitorCtl       `mapstructure:"monitorctl"`
 	Amixer   Amixer             `mapstructure:"amixer"`
 	XLock    XLock              `mapstructure:"xlock"`
 	Lirc     Lirc               `mapstructure:"lirc"`
@@ -31,7 +32,11 @@ type Ddcutil struct {
 	Bin string `mapstructure:"bin"`
 }
 
-type Xset struct {
+type Blanking struct {
+	Bin string `mapstructure:"bin"`
+}
+
+type MonitorCtl struct {
 	Bin string `mapstructure:"bin"`
 }
 

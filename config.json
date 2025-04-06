@@ -28,8 +28,11 @@
   "ddcutil": {
     "bin": "/usr/bin/ddcutil"
   },
-  "xset": {
+  "monitorctl": {
     "bin": "scripts/wakeUserDisplays.sh"
+  },
+  "blanking": {
+    "bin": "scripts/resetBlanking.sh"
   },
   "amixer": {
     "bin": "/usr/bin/amixer"
