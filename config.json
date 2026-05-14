@@ -29,16 +29,16 @@
     "bin": "/usr/bin/ddcutil"
   },
   "monitorctl": {
-    "bin": "scripts/wakeUserDisplays.sh"
+    "bin": "scripts/cachyos-wake.sh"
   },
   "blanking": {
-    "bin": "scripts/resetBlanking.sh"
+    "bin": "scripts/cachyos-wake.sh"
   },
   "amixer": {
     "bin": "/usr/bin/amixer"
   },
   "xlock": {
-    "bin": "cinnamon-unlock-desktop"
+    "bin": "scripts/cachyos-unlock.sh"
   },
   "lirc": {
     "bin": "/usr/bin/irsend",
