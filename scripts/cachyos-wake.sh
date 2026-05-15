@@ -6,66 +6,94 @@
 
 ACTION=$1
 DISPLAY_NUM=$2
+LOG="/tmp/cachyos-wake.log"
 
-# Find active user sessions (UID, username, display)
+log() { echo "[$(date '+%H:%M:%S')] $*" >> "$LOG"; }
+
+# Find active user sessions (UID, username, session type, display)
 get_sessions() {
     loginctl list-sessions --no-legend 2>/dev/null | while read -r sid uid user seat rest; do
-        # Skip non-graphical sessions
         class=$(loginctl show-session "$sid" -p Class --value 2>/dev/null) || continue
         [ "$class" != "user" ] && continue
+        type=$(loginctl show-session "$sid" -p Type --value 2>/dev/null || true)
         display=$(loginctl show-session "$sid" -p Display --value 2>/dev/null || true)
         seat=$(loginctl show-session "$sid" -p Seat --value 2>/dev/null || true)
-        echo "$sid $uid $user $display $seat"
+        echo "$sid|$uid|$user|$type|$display|$seat"
     done
 }
 
 run_as_user() {
     local uid=$1 user=$2
     shift 2
-    sudo -u "$user" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" "$@" 2>/dev/null || true
+    if [ "$(id -u)" = "$uid" ]; then
+        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
+        XDG_RUNTIME_DIR="/run/user/$uid" "$@"
+    else
+        sudo -u "$user" \
+            DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
+            XDG_RUNTIME_DIR="/run/user/$uid" "$@" 2>/dev/null || true
+    fi
 }
 
 do_wake_x11() {
     local user=$1 uid=$2 display=$3 state=$4
+    log "X11: xset -display $display dpms force $state"
     run_as_user "$uid" "$user" xset -display "$display" dpms force "$state"
 }
 
 do_wake_wayland() {
     local user=$1 uid=$2 state=$3
-    if command -v kscreen-doctor &>/dev/null; then
-        if [ "$state" = "on" ] || [ "$state" = "reset" ]; then
-            run_as_user "$uid" "$user" kscreen-doctor output.*.dpms.on
-        elif [ "$state" = "off" ]; then
-            run_as_user "$uid" "$user" kscreen-doctor output.*.dpms.off
+    if ! command -v kscreen-doctor &>/dev/null; then
+        return
+    fi
+
+    if [ "$state" = "on" ]; then
+        # Inject a real input event to wake from DPMS
+        WAKER="$(dirname "$0")/wake-inject"
+        if [ -x "$WAKER" ]; then
+            log "wake via $WAKER"
+            "$WAKER"
         fi
+        # Restore brightness (was set to 0 by "off")
+        run_as_user "$uid" "$user" kscreen-doctor "output.*.brightness.75" 2>/dev/null || true
+    elif [ "$state" = "off" ]; then
+        # Set brightness to 0 on all outputs to simulate display off
+        log "brightness 0 on all outputs"
+        run_as_user "$uid" "$user" kscreen-doctor "output.*.brightness.0" 2>/dev/null || true
     fi
 }
 
 do_reset_x11() {
     local user=$1 uid=$2 display=$3 timeout=$4
-    run_as_user "$uid" "$user" xset -display "$display" dpms "$timeout" "$timeout" "$timeout"
-    run_as_user "$uid" "$user" xset -display "$display" s "$timeout" "$timeout"
+    log "X11 reset: xset dpms $timeout"
+    run_as_user "$uid" "$user" xset -display "$display" dpms "$timeout" "$timeout" "$timeout" 2>/dev/null || true
+    run_as_user "$uid" "$user" xset -display "$display" s "$timeout" "$timeout" 2>/dev/null || true
 }
 
-get_sessions | while read -r sid uid user display seat; do
+log "=== cachyos-wake.sh $* ==="
+
+get_sessions | while IFS='|' read -r sid uid user type display seat; do
     [ -z "$uid" ] && continue
-    [ -n "$DISPLAY_NUM" ] && [[ "$display" != *":$DISPLAY_NUM"* ]] && continue
+    [ -n "$DISPLAY_NUM" ] && [ -n "$display" ] && [[ "$display" != *":$DISPLAY_NUM"* ]] && continue
 
     case "$ACTION" in
         on|off)
-            if command -v xset &>/dev/null; then
+            if [ "$type" = "x11" ]; then
                 do_wake_x11 "$user" "$uid" "$display" "$ACTION"
-            else
+            elif [ "$type" = "wayland" ]; then
                 do_wake_wayland "$user" "$uid" "$ACTION"
             fi
             ;;
-        reset)
-            local timeout="${DISPLAY_NUM:-600}"
-            if command -v xset &>/dev/null; then
-                do_reset_x11 "$user" "$uid" "$display" "$timeout"
+        reset|[0-9]*)
+            if [[ "$ACTION" =~ ^[0-9]+$ ]]; then
+                local timeout="$ACTION"
             else
-                do_wake_wayland "$user" "$uid" on
+                local timeout="${DISPLAY_NUM:-600}"
             fi
+            if [ "$type" = "x11" ]; then
+                do_reset_x11 "$user" "$uid" "$display" "$timeout"
+            fi
+            # Wayland: KWin manages DPMS timeouts internally, no-op
             ;;
     esac
 done

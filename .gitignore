@@ -24,5 +24,13 @@ go.work.sum
 # env file
 .env
 
+# Generated binaries
+switcher
+scripts/wake-inject
+
+# Runtime logs
+*.log
+/tmp/*.log
+
 # Jetbrains
 .idea
