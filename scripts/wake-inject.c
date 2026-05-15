@@ -5,6 +5,10 @@
 #include <string.h>
 #include <stdio.h>
 
+// Build: make -C scripts
+//   or: gcc -std=gnu99 -O2 -o wake-inject wake-inject.c
+// Requires /dev/uinput (root or uinput group)
+
 int main() {
     int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
     if (fd < 0) { perror("open /dev/uinput"); return 1; }

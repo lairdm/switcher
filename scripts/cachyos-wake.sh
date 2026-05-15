@@ -8,7 +8,7 @@ ACTION=$1
 DISPLAY_NUM=$2
 LOG="/tmp/cachyos-wake.log"
 
-log() { echo "[$(date '+%H:%M:%S')] $*" >> "$LOG"; }
+log() { echo "[$(date '+%H:%M:%S')] $*" >> "$LOG" 2>/dev/null; }
 
 # Find active user sessions (UID, username, session type, display)
 get_sessions() {
@@ -86,9 +86,9 @@ get_sessions | while IFS='|' read -r sid uid user type display seat; do
             ;;
         reset|[0-9]*)
             if [[ "$ACTION" =~ ^[0-9]+$ ]]; then
-                local timeout="$ACTION"
+                timeout="$ACTION"
             else
-                local timeout="${DISPLAY_NUM:-600}"
+                timeout="${DISPLAY_NUM:-600}"
             fi
             if [ "$type" = "x11" ]; then
                 do_reset_x11 "$user" "$uid" "$display" "$timeout"
