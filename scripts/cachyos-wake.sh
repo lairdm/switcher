@@ -48,18 +48,18 @@ do_wake_wayland() {
     fi
 
     if [ "$state" = "on" ]; then
-        # Inject a real input event to wake from DPMS
         WAKER="$(dirname "$0")/wake-inject"
         if [ -x "$WAKER" ]; then
             log "wake via $WAKER"
             "$WAKER"
         fi
-        # Restore brightness (was set to 0 by "off")
-        run_as_user "$uid" "$user" kscreen-doctor "output.*.brightness.75" 2>/dev/null || true
+        log "restore brightness"
+        timeout 5 run_as_user "$uid" "$user" \
+            kscreen-doctor "output.*.brightness.75" 2>/dev/null || true
     elif [ "$state" = "off" ]; then
-        # Set brightness to 0 on all outputs to simulate display off
         log "brightness 0 on all outputs"
-        run_as_user "$uid" "$user" kscreen-doctor "output.*.brightness.0" 2>/dev/null || true
+        timeout 5 run_as_user "$uid" "$user" \
+            kscreen-doctor "output.*.brightness.0" 2>/dev/null || true
     fi
 }
 
