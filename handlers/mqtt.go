@@ -27,24 +27,36 @@ func MessageHandler(settings *config.Settings) func(client mqtt.Client, msg mqtt
 	return func(client mqtt.Client, msg mqtt.Message) {
 		var decodedCommand []commands.Command
 		if err := json.Unmarshal(msg.Payload(), &decodedCommand); err != nil {
-			errStr := fmt.Sprintf("Error decoding message: %s\n", err)
-			panic(errStr)
+			fmt.Printf("Error decoding message: %s\n", err)
+			return
 		}
 
 		for _, command := range decodedCommand {
-			switch command.Command {
-			case commands.MonitorCommand:
-				MonitorHandler(command.Data, settings)
-			case commands.SoundCommand:
-				SoundHandler(command.Data, settings)
-			case commands.LockCommand:
-				LockHandler(command.Data, settings)
-			case commands.SpeakerCommand:
-				SpeakerHandler(command.Data, settings)
-			default:
-				fmt.Printf("Unknown command: %s\n", command.Command)
-			}
+			RunCommand(command, settings)
 		}
+	}
+}
+
+// RunCommand executes a single command, containing any panic so one bad
+// command can't kill the process or abort the rest of the batch.
+func RunCommand(command commands.Command, settings *config.Settings) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Recovered from panic handling %s command: %v\n", command.Command, r)
+		}
+	}()
+
+	switch command.Command {
+	case commands.MonitorCommand:
+		MonitorHandler(command.Data, settings)
+	case commands.SoundCommand:
+		SoundHandler(command.Data, settings)
+	case commands.LockCommand:
+		LockHandler(command.Data, settings)
+	case commands.SpeakerCommand:
+		SpeakerHandler(command.Data, settings)
+	default:
+		fmt.Printf("Unknown command: %s\n", command.Command)
 	}
 }
 

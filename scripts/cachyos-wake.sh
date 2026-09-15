@@ -31,7 +31,9 @@ run_as_user() {
     else
         sudo -u "$user" \
             DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
-            XDG_RUNTIME_DIR="/run/user/$uid" "$@" 2>/dev/null || true
+            XDG_RUNTIME_DIR="/run/user/$uid" \
+            WAYLAND_DISPLAY="wayland-0" \
+            QT_QPA_PLATFORM="wayland" "$@" 2>/dev/null || true
     fi
 }
 
@@ -42,8 +44,18 @@ do_wake_x11() {
 }
 
 do_wake_wayland() {
-    local user=$1 uid=$2 state=$3
+    local user=$1 uid=$2 state=$3 o
     if ! command -v kscreen-doctor &>/dev/null; then
+        return
+    fi
+
+    esc=$(printf '\033')
+    outputs=$(run_as_user "$uid" "$user" kscreen-doctor -o 2>/dev/null \
+        | sed -E "s/${esc}\[[0-9;]*m//g" \
+        | sed -n 's/^Output: [0-9]* //p' \
+        | awk '{print $1}')
+    if [ -z "$outputs" ]; then
+        log "no outputs discovered"
         return
     fi
 
@@ -53,13 +65,23 @@ do_wake_wayland() {
             log "wake via $WAKER"
             "$WAKER"
         fi
-        log "restore brightness"
-        timeout 5 run_as_user "$uid" "$user" \
-            kscreen-doctor "output.*.brightness.75" 2>/dev/null || true
+        for o in $outputs; do
+            b=$(cat "/tmp/cachyos-brightness-$o" 2>/dev/null || echo "75")
+            log "brightness restore output.$o = $b"
+            run_as_user "$uid" "$user" kscreen-doctor "output.${o}.brightness.${b}" 2>/dev/null || true
+        done
     elif [ "$state" = "off" ]; then
-        log "brightness 0 on all outputs"
-        timeout 5 run_as_user "$uid" "$user" \
-            kscreen-doctor "output.*.brightness.0" 2>/dev/null || true
+        for o in $outputs; do
+            run_as_user "$uid" "$user" kscreen-doctor -o 2>/dev/null \
+                | sed -E "s/${esc}\[[0-9;]*m//g" \
+                | sed -n "/^Output: [0-9]* ${o} /,/^Output: /p" \
+                | grep -oP 'set to \K[0-9]+(?=%)' \
+                | head -1 > "/tmp/cachyos-brightness-$o" 2>/dev/null
+        done
+        for o in $outputs; do
+            log "brightness 0 on $o"
+            run_as_user "$uid" "$user" kscreen-doctor "output.${o}.brightness.0" 2>/dev/null || true
+        done
     fi
 }
 

@@ -12,8 +12,8 @@ import (
 func SoundHandler(rawCommand json.RawMessage, settings *config.Settings) {
 	var command commands.Sound
 	if err := json.Unmarshal(rawCommand, &command); err != nil {
-		errStr := fmt.Sprintf("Error decoding message: %s\n", err)
-		panic(errStr)
+		fmt.Printf("Error decoding sound command: %s\n", err)
+		return
 	}
 
 	fmt.Printf("Sound: %s\n", command)
@@ -26,22 +26,27 @@ func SoundHandler(rawCommand json.RawMessage, settings *config.Settings) {
 func VolumeHandler(command commands.Sound, settings *config.Settings) {
 	fmt.Printf("Attempting to change volume to %d\n", command.Volume)
 
-	var cmd *exec.Cmd
+	var args []string
 	switch command.Volume {
 	case sound.Mute:
 		fmt.Println("Muting sound")
-		cmd = exec.Command(settings.Amixer.Bin, "sset", "Master", "0")
+		args = []string{"sset", "Master", "0"}
 	case sound.Up:
 		fmt.Println("Increasing volume")
-		cmd = exec.Command(settings.Amixer.Bin, "sset", "Master", "5%+")
+		args = []string{"sset", "Master", "5%+"}
 	case sound.Down:
 		fmt.Println("Decreasing volume")
-		cmd = exec.Command(settings.Amixer.Bin, "sset", "Master", "5%-")
+		args = []string{"sset", "Master", "5%-"}
+	default:
+		fmt.Printf("Unknown volume command: %s\n", command.Volume.String())
+		return
 	}
 
-	out, err := cmd.Output()
+	out, err := exec.Command(settings.Amixer.Bin, args...).Output()
 	if err != nil {
-		fmt.Println(string(out))
-		panic(err)
+		fmt.Printf("amixer failed: %v\n", err)
+		if len(out) > 0 {
+			fmt.Println(string(out))
+		}
 	}
 }

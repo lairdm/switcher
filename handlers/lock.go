@@ -11,8 +11,8 @@ import (
 func LockHandler(rawCommand json.RawMessage, settings *config.Settings) {
 	var command commands.Lock
 	if err := json.Unmarshal(rawCommand, &command); err != nil {
-		errStr := fmt.Sprintf("Error decoding message: %s\n", err)
-		panic(errStr)
+		fmt.Printf("Error decoding lock command: %s\n", err)
+		return
 	}
 
 	if command.Unlock {

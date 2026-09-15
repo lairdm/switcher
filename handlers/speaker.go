@@ -10,8 +10,8 @@ import (
 func SpeakerHandler(rawCommand json.RawMessage, settings *config.Settings) {
 	var command commands.Speaker
 	if err := json.Unmarshal(rawCommand, &command); err != nil {
-		errStr := fmt.Sprintf("Error decoding message: %s\n", err)
-		panic(errStr)
+		fmt.Printf("Error decoding speaker command: %s\n", err)
+		return
 	}
 
 	fmt.Printf("Speaker: %s\n", command)
