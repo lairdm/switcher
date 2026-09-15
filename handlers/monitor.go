@@ -4,24 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"switcher/commands"
 	"switcher/config"
 	"switcher/monitor"
+	"time"
 )
 
 func MonitorHandler(rawCommand json.RawMessage, settings *config.Settings) {
 	var command commands.Monitor
 	if err := json.Unmarshal(rawCommand, &command); err != nil {
-		errStr := fmt.Sprintf("Error decoding message: %s\n", err)
-		panic(errStr)
+		fmt.Printf("Error decoding monitor command: %s\n", err)
+		return
 	}
 
 	fmt.Printf("Monitor: %s\n", command)
 	var monitorProfile config.Monitor
 	ok := false
 	if monitorProfile, ok = settings.Monitors[command.Monitor]; !ok {
-		errorString := fmt.Sprintf("Monitor %s not found\n", command.Monitor)
-		panic(errorString)
+		fmt.Printf("Monitor %s not found\n", command.Monitor)
+		return
 	}
 
 	if command.Input != 0 {
@@ -33,54 +35,71 @@ func MonitorHandler(rawCommand json.RawMessage, settings *config.Settings) {
 	}
 }
 
+func ddcutilArgs(monitorProfile config.Monitor) []string {
+	if monitorProfile.Bus != 0 {
+		return []string{"--bus", strconv.Itoa(monitorProfile.Bus)}
+	}
+	return []string{"--sn", monitorProfile.Serial}
+}
+
+// runDdcutil runs ddcutil, retrying once. DDC/i2c is occasionally flaky and
+// ddcutil doesn't always succeed on the first attempt.
+func runDdcutil(bin string, args []string) {
+	var out []byte
+	var err error
+	for attempt := 1; attempt <= 2; attempt++ {
+		out, err = exec.Command(bin, args...).Output()
+		if err == nil {
+			return
+		}
+		fmt.Printf("ddcutil attempt %d failed: %v\n", attempt, err)
+		if len(out) > 0 {
+			fmt.Println(string(out))
+		}
+		if attempt < 2 {
+			time.Sleep(2 * time.Second)
+		}
+	}
+	fmt.Printf("ddcutil gave up: %v\n", err)
+}
+
 func InputHandler(command commands.Monitor, monitorProfile config.Monitor, settings *config.Settings) {
 
 	if _, ok := monitorProfile.Inputs[command.Input.String()]; !ok {
-		errorString := fmt.Sprintf("Input %s not found for monitor %s\n", command.Input.String(), command.Monitor)
-		panic(errorString)
+		fmt.Printf("Input %s not found for monitor %s\n", command.Input.String(), command.Monitor)
+		return
 	}
 
+	args := ddcutilArgs(monitorProfile)
 	fmt.Printf("Attempting to change monitor %s to input %s\n", monitorProfile.Serial, monitorProfile.Inputs[command.Input.String()])
-	fmt.Println(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", "60", monitorProfile.Inputs[command.Input.String()])
+	fmt.Println(settings.Ddcutil.Bin, args[0], args[1], "setvcp", "60", monitorProfile.Inputs[command.Input.String()])
 
-	cmd := exec.Command(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", "60", monitorProfile.Inputs[command.Input.String()])
-	out, err := cmd.Output()
-	if err != nil {
-		fmt.Println(string(out))
-		panic(err)
-	}
+	runDdcutil(settings.Ddcutil.Bin, append(args, "setvcp", "60", monitorProfile.Inputs[command.Input.String()]))
 }
 
 func PowerHandler(command commands.Monitor, monitorProfile config.Monitor, settings *config.Settings) {
 	if monitorProfile.Display == "" {
-		errorString := fmt.Sprintf("Display %s not found for monitor %s\n", command.Power.String(), command.Monitor)
-		panic(errorString)
+		fmt.Printf("Display not found for monitor %s\n", command.Monitor)
+		return
 	}
 
 	fmt.Printf("Attempting to change monitor %s to power %s\n", monitorProfile.Serial, command.Power.String())
-	//	fmt.Println(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", "60", monitorProfile.Inputs[command.Input.String()])
 
-	var cmd *exec.Cmd
+	args := ddcutilArgs(monitorProfile)
 	switch command.Power {
 	case monitor.On:
-		cmd = exec.Command(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", "0xD6", "0x01")
+		runDdcutil(settings.Ddcutil.Bin, append(args, "setvcp", "0xD6", "0x01"))
 	case monitor.Off:
-		cmd = exec.Command(settings.Ddcutil.Bin, "--sn", monitorProfile.Serial, "setvcp", "0xD6", "0x04")
+		runDdcutil(settings.Ddcutil.Bin, append(args, "setvcp", "0xD6", "0x04"))
 	case monitor.Wake:
-		cmd = exec.Command(settings.MonitorCtl.Bin, "on", monitorProfile.Display)
-	case monitor.Sleep:
-		cmd = exec.Command(settings.MonitorCtl.Bin, "off", monitorProfile.Display)
-	case monitor.Reset:
-		cmd = exec.Command(settings.Blanking.Bin, "600", monitorProfile.Display)
+		out, err := exec.Command(settings.Xset.Bin, monitorProfile.Display).Output()
+		if err != nil {
+			fmt.Printf("xset failed: %v\n", err)
+			if len(out) > 0 {
+				fmt.Println(string(out))
+			}
+		}
 	default:
-		errStr := fmt.Sprintf("Invalid power state: %s\n", command.Power.String())
-		panic(errStr)
-	}
-
-//	fmt.Println(cmd)
-	out, err := cmd.Output()
-	if err != nil {
-		fmt.Println(string(out))
-		panic(err)
+		fmt.Printf("Invalid power state: %s\n", command.Power.String())
 	}
 }

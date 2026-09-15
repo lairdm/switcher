@@ -7,13 +7,13 @@
   },
   "monitors": {
    "left": {
-     "Serial": "6CM9120993",
-     "Inputs": {
-        "dvi": "0x03",
-        "dp": "0x0f",
-        "hdmi": "0x11",
-        "usbc": "0x13"
-     }
+     "Bus": 4,
+     "Serial": "2LWK074",
+      "Inputs": {
+         "dp": "0x0f",
+         "hdmi": "0x11",
+         "usbc": "0x13"
+      }
    },
     "right": {
       "Serial": "GB2Q2P3",
